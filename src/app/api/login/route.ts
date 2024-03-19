@@ -1,14 +1,11 @@
-import { eventResponseSchema } from "@/schema/event/response";
+import { generateToken } from "@/libs/token";
+import SymplaService from "@/services/Sympla";
 
 export async function POST(request: Request) {
-	const { symplaApiKey } = await request.json();
-
-	const url = new URL("https://api.sympla.com.br/public/v4/events");
-	url.searchParams.append("page_size", "1");
-
-	const response = await fetch(url, { headers: { S_TOKEN: symplaApiKey } });
-	const eventResponse = eventResponseSchema.parse(await response.json());
-
-	console.log(eventResponse);
-	return Response.json({ message: "The Api Key is valid" });
+	const body = await request.json();
+	const symplaApiKey = String(body.symplaApiKey);
+	const symplaService = new SymplaService(symplaApiKey);
+	await symplaService.getEvents({ pageSize: 1 });
+	const token = generateToken({ symplaApiKey });
+	return Response.json({ token });
 }
