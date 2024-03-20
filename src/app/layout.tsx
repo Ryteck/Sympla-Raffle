@@ -2,8 +2,6 @@ import "@/styles/tailwind.css";
 
 import { NextuiProviderComponent } from "@/components/providers/nextui";
 import { QueryProviderComponent } from "@/components/providers/query";
-
-import { ConfettiProviderComponent } from "@/components/providers/conffetti";
 import type { Metadata } from "next";
 import type { FC, PropsWithChildren } from "react";
 
@@ -16,9 +14,7 @@ const Layout: FC<PropsWithChildren> = ({ children }) => (
 	<html lang="en" className="dark">
 		<body>
 			<NextuiProviderComponent>
-				<ConfettiProviderComponent>
-					<QueryProviderComponent>{children}</QueryProviderComponent>
-				</ConfettiProviderComponent>
+				<QueryProviderComponent>{children}</QueryProviderComponent>
 			</NextuiProviderComponent>
 		</body>
 	</html>

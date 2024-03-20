@@ -4,7 +4,6 @@ import { RouletteComponent } from "@/components/roulette";
 import type { Event } from "@/schema/event";
 import type { Participant } from "@/schema/participants";
 import { useAuthStore } from "@/stores/auth";
-import { useConfettiStore } from "@/stores/confetti";
 import {
 	Button,
 	Card,
@@ -31,8 +30,6 @@ interface Params {
 const Page: FC<Params> = ({ params }) => {
 	const authStore = useAuthStore();
 	const [ticket, setTicket] = useState<null | string>(null);
-
-	const confettiStore = useConfettiStore();
 
 	const event = useQuery<Event>({
 		queryKey: ["event"],
@@ -89,7 +86,7 @@ const Page: FC<Params> = ({ params }) => {
 
 						{participants.status === "success" && (
 							<div className="w-full flex flex-col gap-1">
-								<Dropdown>
+								<Dropdown backdrop="blur">
 									<DropdownTrigger>
 										<Button color="primary">Raffle!</Button>
 									</DropdownTrigger>
@@ -124,8 +121,12 @@ const Page: FC<Params> = ({ params }) => {
 			<Modal
 				size="5xl"
 				isOpen={isOpen}
+				backdrop="blur"
 				onOpenChange={(e) => {
-					if (e === false) setTicket(null);
+					if (e === false) {
+						setTicket(null);
+						setStartRaffle(false);
+					}
 					onOpenChange();
 				}}
 			>
@@ -145,7 +146,6 @@ const Page: FC<Params> = ({ params }) => {
 									callbackEnd={(name) => {
 										console.log(name);
 										setRaffleLoading(false);
-										confettiStore.setView(true);
 									}}
 								/>
 							</ModalBody>
