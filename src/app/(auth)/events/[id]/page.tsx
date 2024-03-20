@@ -1,8 +1,10 @@
 "use client";
 
+import { RouletteComponent } from "@/components/roulette";
 import type { Event } from "@/schema/event";
 import type { Participant } from "@/schema/participants";
 import { useAuthStore } from "@/stores/auth";
+import { useConfettiStore } from "@/stores/confetti";
 import {
 	Button,
 	Card,
@@ -20,7 +22,7 @@ import {
 	useDisclosure,
 } from "@nextui-org/react";
 import { useQuery } from "@tanstack/react-query";
-import { type FC, useState } from "react";
+import { type FC, useEffect, useState } from "react";
 
 interface Params {
 	params: { id: string };
@@ -28,7 +30,9 @@ interface Params {
 
 const Page: FC<Params> = ({ params }) => {
 	const authStore = useAuthStore();
-	const [ticket, setTicket] = useState(new Set<string>([]));
+	const [ticket, setTicket] = useState<null | string>(null);
+
+	const confettiStore = useConfettiStore();
 
 	const event = useQuery<Event>({
 		queryKey: ["event"],
@@ -56,7 +60,23 @@ const Page: FC<Params> = ({ params }) => {
 		},
 	});
 
+	const [filteredParticipants, setFilteredParticipants] = useState<
+		Participant[]
+	>([]);
+
+	useEffect(() => {
+		setFilteredParticipants(
+			participants.status === "success"
+				? participants.data.filter(
+						(participant) => participant.ticket_name === ticket,
+				  )
+				: [],
+		);
+	}, [participants.status, participants.data, ticket]);
+
 	const { isOpen, onOpen, onOpenChange } = useDisclosure();
+	const [startRaffle, setStartRaffle] = useState(false);
+	const [raffleLoading, setRaffleLoading] = useState(false);
 
 	return (
 		<main className="p-8">
@@ -69,7 +89,7 @@ const Page: FC<Params> = ({ params }) => {
 
 						{participants.status === "success" && (
 							<div className="w-full flex flex-col gap-1">
-								<Dropdown backdrop="blur">
+								<Dropdown>
 									<DropdownTrigger>
 										<Button color="primary">Raffle!</Button>
 									</DropdownTrigger>
@@ -78,7 +98,13 @@ const Page: FC<Params> = ({ params }) => {
 											.map((participant) => participant.ticket_name)
 											.filter((v, i, a) => a.indexOf(v) === i)
 											.map((ticket) => (
-												<DropdownItem onClick={onOpen} key={ticket}>
+												<DropdownItem
+													onClick={() => {
+														setTicket(ticket);
+														onOpen();
+													}}
+													key={ticket}
+												>
 													{ticket}
 												</DropdownItem>
 											))}
@@ -95,38 +121,48 @@ const Page: FC<Params> = ({ params }) => {
 				</Card>
 			)}
 
-			<Modal isOpen={isOpen} onOpenChange={onOpenChange} backdrop="blur">
+			<Modal
+				size="5xl"
+				isOpen={isOpen}
+				onOpenChange={(e) => {
+					if (e === false) setTicket(null);
+					onOpenChange();
+				}}
+			>
 				<ModalContent>
 					{(onClose) => (
 						<>
 							<ModalHeader className="flex flex-col gap-1">
-								Modal Title
+								<h2>{ticket}</h2>
+								<p className="text-sm">
+									Total participants: {filteredParticipants.length}
+								</p>
 							</ModalHeader>
 							<ModalBody>
-								<p>
-									Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-									Nullam pulvinar risus non risus hendrerit venenatis.
-									Pellentesque sit amet hendrerit risus, sed porttitor quam.
-								</p>
-								<p>
-									Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-									Nullam pulvinar risus non risus hendrerit venenatis.
-									Pellentesque sit amet hendrerit risus, sed porttitor quam.
-								</p>
-								<p>
-									Magna exercitation reprehenderit magna aute tempor cupidatat
-									consequat elit dolor adipisicing. Mollit dolor eiusmod sunt ex
-									incididunt cillum quis. Velit duis sit officia eiusmod Lorem
-									aliqua enim laboris do dolor eiusmod. Et mollit incididunt
-									nisi consectetur esse laborum eiusmod pariatur proident Lorem
-									eiusmod et. Culpa deserunt nostrud ad veniam.
-								</p>
+								<RouletteComponent
+									start={startRaffle}
+									participants={filteredParticipants}
+									callbackEnd={(name) => {
+										console.log(name);
+										setRaffleLoading(false);
+										confettiStore.setView(true);
+									}}
+								/>
 							</ModalBody>
 							<ModalFooter>
 								<Button color="danger" variant="light" onPress={onClose}>
 									Close
 								</Button>
-								<Button color="primary">Raffle!</Button>
+								<Button
+									color={startRaffle ? "secondary" : "primary"}
+									isLoading={raffleLoading}
+									onClick={() => {
+										if (!startRaffle) setRaffleLoading(true);
+										setStartRaffle((s) => !s);
+									}}
+								>
+									{startRaffle ? "Reset" : "Raffle Now!"}!
+								</Button>
 							</ModalFooter>
 						</>
 					)}

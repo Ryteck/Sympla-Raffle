@@ -1,5 +1,6 @@
 import { EVENT_KEYS } from "@/enums/event_keys";
 import type { Event } from "@/schema/event";
+import { useAuthStore } from "@/stores/auth";
 import {
 	Button,
 	Dropdown,
@@ -52,6 +53,7 @@ interface Props {
 
 export const EventsComponent: FC<Props> = ({ events }) => {
 	const [filterValue, setFilterValue] = useState("");
+	const authStore = useAuthStore();
 
 	const [visibleColumns, setVisibleColumns] = useState<Selection>(
 		new Set(INITIAL_VISIBLE_COLUMNS),
@@ -184,6 +186,15 @@ export const EventsComponent: FC<Props> = ({ events }) => {
 								))}
 							</DropdownMenu>
 						</Dropdown>
+
+						<Button
+							variant="bordered"
+							color="danger"
+							size="sm"
+							onClick={authStore.logout}
+						>
+							Exit
+						</Button>
 					</div>
 				</div>
 				<div className="flex justify-between items-center">
@@ -212,6 +223,7 @@ export const EventsComponent: FC<Props> = ({ events }) => {
 		onSearchChange,
 		onRowsPerPageChange,
 		events,
+		authStore.logout,
 	]);
 
 	const bottomContent = useMemo(

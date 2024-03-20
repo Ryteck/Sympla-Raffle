@@ -5,6 +5,7 @@ interface AuthStore {
 	token: null | string;
 	getToken: () => null | string;
 	login: (symplaApiKey: string) => Promise<void>;
+	logout: () => void;
 }
 
 export const useAuthStore = create<AuthStore>()(
@@ -25,6 +26,8 @@ export const useAuthStore = create<AuthStore>()(
 				const { token } = await response.json();
 				set({ token });
 			},
+
+			logout: () => set({ token: null }),
 		}),
 		{ name: "sympla-raffle-auth" },
 	),
