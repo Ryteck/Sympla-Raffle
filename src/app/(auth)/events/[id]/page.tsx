@@ -126,6 +126,7 @@ const Page: FC<Params> = ({ params }) => {
 					if (e === false) {
 						setTicket(null);
 						setStartRaffle(false);
+						setRaffleLoading(false);
 					}
 					onOpenChange();
 				}}
