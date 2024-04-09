@@ -17,13 +17,15 @@ const participantSchema = z.object({
 	last_name: z.string(),
 	email: z.string(),
 	// custom_form: z.array(z.unknown()),
-	// checkin: z.array(
-	// 	z.object({
-	// 		checkin_id: z.number(),
-	// 		check_in: z.boolean(),
-	// 		check_in_date: z.null(),
-	// 	}),
-	// ),
+	checkin: z
+		.array(
+			z.object({
+				checkin_id: z.number(),
+				check_in: z.boolean(),
+				check_in_date: z.string().nullable(),
+			}),
+		)
+		.transform((arg) => arg.find(({ check_in }) => check_in) !== undefined),
 });
 
 export default participantSchema;

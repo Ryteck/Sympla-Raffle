@@ -22,10 +22,14 @@ export async function GET(request: Request, { params }: Params) {
 			page++,
 		);
 
-		participants.push(...participantsResponse.data);
+		participants.push(
+			...participantsResponse.data.filter(({ checkin }) => checkin),
+		);
 
 		if (!participantsResponse.pagination.has_next) break;
 	}
+
+	console.log(participants);
 
 	return Response.json(participants);
 }
